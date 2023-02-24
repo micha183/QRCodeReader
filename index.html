@@ -1,32 +1,59 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
     <title>QR Code Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
   </head>
   <body>
-    <h1>QR Code Scanner</h1>
-    <p>Click the button below to scan a QR code:</p>
-    <button onclick="scan()">Scan QR Code</button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <video id="video" width="320" height="240" autoplay></video>
+    <canvas id="canvas" width="320" height="240"></canvas>
+    <button id="scan">Scan QR Code</button>
+    <div id="output"></div>
+
     <script>
-      function scan() {
-        var scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
-        scanner.addListener('scan', function (content) {
-          alert('Scanned QR code: ' + content);
-        });
-        Instascan.Camera.getCameras().then(function (cameras) {
-          if (cameras.length > 0) {
-            scanner.start(cameras[0]);
-          } else {
-            alert('No cameras found.');
-          }
-        }).catch(function (error) {
-          console.error(error);
-          alert('Failed to get camera: ' + error);
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const scanButton = document.getElementById('scan');
+      const output = document.getElementById('output');
+
+      function onSuccess(stream) {
+        video.srcObject = stream;
+
+        const track = stream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+
+        function scanQRCode() {
+          imageCapture.grabFrame()
+            .then(imageBitmap => {
+              canvas.getContext('2d').drawImage(imageBitmap, 0, 0, canvas.width, canvas.height);
+
+              const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+              const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+              if (code) {
+                output.textContent = code.data;
+              }
+
+              requestAnimationFrame(scanQRCode);
+            })
+            .catch(error => {
+              console.log(error);
+            });
+        }
+
+        scanButton.addEventListener('click', () => {
+          scanButton.style.display = 'none';
+          requestAnimationFrame(scanQRCode);
         });
       }
+
+      function onError(error) {
+        console.log(error);
+      }
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(onSuccess)
+        .catch(onError);
     </script>
-    <video id="preview"></video>
   </body>
 </html>
