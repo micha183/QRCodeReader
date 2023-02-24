@@ -2,58 +2,26 @@
 <html>
   <head>
     <title>QR Code Scanner</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
-    <video id="video" width="320" height="240" autoplay></video>
-    <canvas id="canvas" width="320" height="240"></canvas>
-    <button id="scan">Scan QR Code</button>
-    <div id="output"></div>
-
+    <video id="video"></video>
+    <canvas id="canvas"></canvas>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
     <script>
-      const video = document.getElementById('video');
-      const canvas = document.getElementById('canvas');
-      const scanButton = document.getElementById('scan');
-      const output = document.getElementById('output');
-
-      function onSuccess(stream) {
-        video.srcObject = stream;
-
-        const track = stream.getVideoTracks()[0];
-        const imageCapture = new ImageCapture(track);
-
-        function scanQRCode() {
-          imageCapture.grabFrame()
-            .then(imageBitmap => {
-              canvas.getContext('2d').drawImage(imageBitmap, 0, 0, canvas.width, canvas.height);
-
-              const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-              const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-              if (code) {
-                output.textContent = code.data;
-              }
-
-              requestAnimationFrame(scanQRCode);
-            })
-            .catch(error => {
-              console.log(error);
-            });
+      let scanner = new Instascan.Scanner({ video: document.getElementById('video') });
+      scanner.addListener('scan', function (content) {
+        alert(content);
+      });
+      Instascan.Camera.getCameras().then(function (cameras) {
+        if (cameras.length > 0) {
+          scanner.start(cameras[0]);
+        } else {
+          console.error('No cameras found.');
         }
-
-        scanButton.addEventListener('click', () => {
-          scanButton.style.display = 'none';
-          requestAnimationFrame(scanQRCode);
-        });
-      }
-
-      function onError(error) {
-        console.log(error);
-      }
-
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(onSuccess)
-        .catch(onError);
+      }).catch(function (e) {
+        console.error(e);
+      });
     </script>
   </body>
 </html>
