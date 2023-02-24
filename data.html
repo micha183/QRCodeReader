@@ -2,9 +2,18 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Page Title</title>
+  <title>JSON Data Formatter</title>
 </head>
 <body>
-  <p>New Page!</p>
+  <h1>JSON Data Formatter</h1>
+  <button type="button" onclick="formatData()">Format Data</button>
+  <div id="output"></div>
+  <script>
+    function formatData() {
+      const data = JSON.parse(jsonStr);
+      const formattedData = JSON.stringify(data, null, 2);
+      document.getElementById('output').textContent = formattedData;
+    }
+  </script>
 </body>
 </html>
