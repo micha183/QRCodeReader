@@ -13,6 +13,7 @@
 
       function onScanSuccess(decodedText, decodedResult) {
         console.log(`Code scanned = ${decodedText}`, decodedResult);
+        window.location.href = 'data.html'
         }
 
       var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { 
