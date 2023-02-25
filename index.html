@@ -13,6 +13,8 @@
 
       function onScanSuccess(decodedText, decodedResult) {
         console.log(`Code scanned = ${decodedText}`, decodedResult);
+        var email = decodedText;
+        document.getElementById("myEmail").innerHTML = email;
         window.location.href = 'data.html'
         }
 
